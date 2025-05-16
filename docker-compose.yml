@@ -28,10 +28,27 @@ services:
       FULL_SYMBOLS: "BTCUSDT,ETHUSDT"
       TOTAL_REPLICAS: 1
       POD_ORDINAL: 0
+      PARTITIONS: 1
+      KAFKA_BOOTSTRAP: "kafka:9092"
     depends_on:
       - kafka
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/alive" ]
       interval: 30s
       timeout: 3s
+      retries: 3
+
+  aggregator:
+    build: ./aggregator
+    container_name: aggregator
+    depends_on:
+      - kafka
+      - ingestor
+    environment:
+      KAFKA_BOOTSTRAP: "kafka:9092"
+      PARTITIONS: "1"            # bump when you demo scaling
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://aggregator:6066/" ]
+      interval: 30s
+      timeout: 5s
       retries: 3

@@ -1,6 +1,6 @@
 COMPOSE = docker compose
 
-.PHONY: up down logs restart ingestor
+.PHONY: up down logs restart ingestor build
 
 up:                ## Start all containers in detached mode
 	$(COMPOSE) up -d
@@ -19,3 +19,7 @@ restart:           ## Recreate containers after a change
 ingestor:
 	$(COMPOSE) build ingestor
 	$(COMPOSE) up -d ingestor
+
+aggregator:
+	$(COMPOSE) build aggregator
+	$(COMPOSE) up -d aggregator

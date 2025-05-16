@@ -17,14 +17,15 @@ BINANCE_WS = "wss://fstream.binance.com/stream"
 
 # ----- Kafka setup -----
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
-
+PARTITIONS = int(os.getenv("PARTITIONS", "1"))
+TOTAL_REPLICAS = int(os.getenv("TOTAL_REPLICAS", "1"))
 producer_conf = {"bootstrap.servers": KAFKA_BOOTSTRAP}
 producer = Producer(producer_conf)
 
 admin = AdminClient({"bootstrap.servers": KAFKA_BOOTSTRAP})
 existing = admin.list_topics(timeout=5).topics.keys()
 new_topics = [
-    NewTopic(f"trades.{s}", num_partitions=1, replication_factor=1)
+    NewTopic(f"trades.{s}", num_partitions=PARTITIONS, replication_factor=TOTAL_REPLICAS)
     for s in SYMBOLS if f"trades.{s}" not in existing
 ]
 if new_topics:

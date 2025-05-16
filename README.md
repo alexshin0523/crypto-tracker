@@ -5,7 +5,7 @@ A real-time “Crypto-Ticker” service that streams Binance trades, aggregates 
 # Testing Kafka Topics
 To check active topics, run 
 
-```docker exec ingestor python verify_topics.py```
+```docker exec ingestor python ingestor/utils/verify_topics.py```
 
 
 THEN if you want to spin up temporary consumer to read messages from all topics, run
