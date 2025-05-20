@@ -1,4 +1,0 @@
-faust-streaming[rocksdb]==0.11.3
-confluent-kafka==2.2.0
-prometheus_client==0.16.0
-python-dotenv==1.0.1

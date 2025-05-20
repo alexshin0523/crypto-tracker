@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "crypto-tracker-processor"
+version = "0.1.0"
+description = "Crypto Tracker"
+authors = ["Alex Shin <alexwoonggishin@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+packages = [{ include = "processor"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+apache-flink = "1.18"
+confluent-kafka = "^2.7"
+numpy = "^1.24"
+
+[tool.poetry.group.dev.dependencies]
+black  = "^24.0"
+flake8 = "^7.0"
+mypy   = "^1.9"
+pytest = "^8.2"
+
+[build-system]
+requires = ["poetry-core>=1.7.0"]
+build-backend = "poetry.core.masonry.api"

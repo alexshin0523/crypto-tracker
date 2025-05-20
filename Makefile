@@ -20,6 +20,6 @@ ingestor:
 	$(COMPOSE) build ingestor
 	$(COMPOSE) up -d ingestor
 
-aggregator:
-	$(COMPOSE) build aggregator
-	$(COMPOSE) up -d aggregator
+processor:
+	$(COMPOSE) build processor
+	$(COMPOSE) up -d processor

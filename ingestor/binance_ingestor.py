@@ -4,7 +4,7 @@ import asyncio, json, os, signal, sys
 from aiohttp import web
 import websockets
 
-FULL_LIST = os.getenv("FULL_SYMBOLS", "").split(",")
+FULL_LIST = os.getenv("SYMBOLS", "").split(",")
 TOTAL = int(os.getenv("TOTAL_REPLICAS", "1"))
 ORD  = int(os.getenv("POD_ORDINAL",   "0"))
 
