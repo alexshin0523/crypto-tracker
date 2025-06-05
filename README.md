@@ -12,4 +12,12 @@ THEN if you want to spin up temporary consumer to read messages from a topic, ru
 
 ```docker run --network=host edenhill/kcat:1.7.1 -C -b localhost:19092 -t {topic_name} -o beginning -e```
 
-pyt
+# Running Processor unit tests
+
+```cd processor```
+
+```poetry install```
+
+```export PYTHONPATH=..```
+
+```peotry run pytest```

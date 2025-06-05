@@ -1,22 +1,21 @@
-FROM python:3.10-slim
+FROM flink:1.18-scala_2.12
 
+USER root
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-        openjdk-17-jre-headless \
-        curl \
- && rm -rf /var/lib/apt/lists/*
-
-ENV PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.8.2
-
-# install Poetry
-RUN pip install "poetry==$POETRY_VERSION"
+      python3.10 python3-pip python3-venv zip openjdk-17-jdk \
+ && rm -rf /var/lib/apt/lists/* \
+ && pip3 install --no-cache-dir poetry==1.8.2 confluent-kafka==2.2.0 protobuf==4.23.4 \
+ && ln -sf /usr/bin/python3 /usr/bin/python
 
 WORKDIR /app
-COPY pyproject.toml poetry.lock* /app/
+
+COPY processor/pyproject.toml processor/poetry.lock* /app/
 RUN poetry install --no-root --no-interaction --no-ansi
 
-COPY . /app/processor
+COPY processor /app/processor
+
+RUN cd /app && zip -r processor.zip processor
 
 ARG KAFKA_SQL_CONN_VER=3.0.2-1.18
 RUN mkdir -p /app/jars \
@@ -30,4 +29,16 @@ ENV CONNECTOR_JAR=/app/jars/flink-sql-connector-kafka-${KAFKA_SQL_CONN_VER}.jar
 RUN mkdir -p /state-backend
 VOLUME ["/state-backend"]
 
-ENTRYPOINT ["poetry", "run", "python", "-m", "processor.main"]
+USER flink
+RUN echo "taskmanager.numberOfTaskSlots: 2" >> /opt/flink/conf/flink-conf.yaml
+
+ENTRYPOINT ["bash","-c","\
+  /opt/flink/bin/flink run \
+    --jobmanager jobmanager:8081 \
+    --parallelism 1 \
+    --pyModule processor.main \
+    --pyFiles /app/processor.zip \
+    --pyRequirements /app/processor/requirements.txt \
+    --pyClientExecutable /usr/bin/python3 \
+    --detached \
+"]

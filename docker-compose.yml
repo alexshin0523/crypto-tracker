@@ -25,7 +25,7 @@ services:
     build: ./ingestor
     container_name: ingestor
     environment:
-      SYMBOLS: "BTCUSDT,ETHUSDT"
+      SYMBOLS: "BTCUSDT"
       TOTAL_REPLICAS: 1
       POD_ORDINAL: 0
       PARTITIONS: 1
@@ -39,30 +39,44 @@ services:
       retries: 3
 
   jobmanager:
-    image: flink:1.18-scala_2.12
+    build:
+      context: .
+      dockerfile: Dockerfile.flink-state
+    image: my-flink-state
     command: jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
     ports:
       - "8081:8081"   # Flink UI
     volumes:
-      - processor_state:/state-backend
+      - ./state-backend:/state-backend
 
   taskmanager:
-    image: flink:1.18-scala_2.12
+    build:
+      context: .
+      dockerfile: Dockerfile.flink-state
+    image: my-flink-state
     command: taskmanager
     environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+#      FLINK_PROPERTIES: |
+#        taskmanager.numberOfTaskSlots: 2
+
     depends_on: [jobmanager]
     volumes:
-      - processor_state:/state-backend
+      - ./state-backend:/state-backend
 
   processor:
-    build: ./processor
+    build:
+      context: .
+      dockerfile: processor/Dockerfile
     environment:
       KAFKA_BOOTSTRAP: "kafka:9092"
+      CONNECTOR_JAR: "/app/jars/flink-sql-connector-kafka-3.0.2-1.18.jar"
+      STATE_DIR: "file:///state-backend"
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
     volumes:
-      - processor_state:/state-backend
+      - ./state-backend:/state-backend
     depends_on:
       - kafka
       - jobmanager
