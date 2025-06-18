@@ -1,5 +1,7 @@
 from pyflink.common import Types, Row
 
+from processor.models import Candle
+
 CANDLE_TYPE = Types.ROW([
     Types.STRING(),   # symbol
     Types.STRING(),   # interval
@@ -25,3 +27,19 @@ def candle_to_row(candle) -> Row:
         candle.close,
         candle.volume,
     )
+
+def row_to_candle(row):
+    # If your CANDLE_TYPE fields come out in exactly this order:
+    #   (symbol, open, high, low, close, volume)
+    c = Candle(
+        symbol=row[0],
+        interval=row[1],
+        window_start=row[2],
+        window_end=row[3],
+        open=row[4],
+        high=row[5],
+        low=row[6],
+        close=row[7],
+        volume=row[8],
+    )
+    return c.to_json()

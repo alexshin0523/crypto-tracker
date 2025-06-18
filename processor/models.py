@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-import json
+import json, math
 
 @dataclass
 class Trade:
@@ -7,6 +7,7 @@ class Trade:
     price: float
     size: float
     event_ts: int
+
 
 @dataclass
 class Candle:
@@ -20,14 +21,13 @@ class Candle:
     close: float
     volume: float
 
-@dataclass
-class CandleRecord:
-    symbol: str
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: float
-
     def to_json(self) -> str:
         return json.dumps(asdict(self))
+
+@dataclass
+class CandleAccumulator:
+    open:   float = None
+    high:   float = -math.inf
+    low:    float = math.inf
+    close:  float = None
+    volume: float = 0.0

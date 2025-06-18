@@ -23,10 +23,6 @@ def configure_env(env: StreamExecutionEnvironment) -> None:
     env.set_python_requirements(
         requirements_file_path="/app/processor/requirements.txt"
     )
-    # this_dir = os.path.dirname(__file__)                # e.g. "/home/bob/crypto-tracker/jobs"
-    # project_root = os.path.abspath(os.path.join(this_dir, os.pardir))
-    # processor_folder = os.path.join(project_root, "processor")
-    # env.add_python_file(processor_folder)
 
 def build_pipeline(env: StreamExecutionEnvironment) -> None:
     aggregator.build(env)

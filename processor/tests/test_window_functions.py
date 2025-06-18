@@ -15,7 +15,7 @@ class DummyContext:
         return self._w
 
 def test_ohlcv_window_function_yields_correct_row():
-    fn = OHLCVWindowFunction()
+    fn = OHLCVWindowFunction("1s")
     trades = [
         Trade(symbol="XYZ", price=1.0, size=2.0, event_ts=1000),
         Trade(symbol="XYZ", price=3.0, size=1.5, event_ts=2000),
@@ -40,6 +40,6 @@ def test_ohlcv_window_function_yields_correct_row():
     assert pytest.approx(row[8], rel=1e-6) == 2.0 + 1.5 + 0.5  # volume
 
 def test_empty_window_yields_nothing():
-    fn = OHLCVWindowFunction()
+    fn = OHLCVWindowFunction("1s")
     out = list(fn.process("NOP", DummyContext(0, 60000), []))
     assert out == []  # no trades → no candle

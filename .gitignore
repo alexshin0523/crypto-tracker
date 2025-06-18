@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Flink state backend and checkpoints
+/state-backend/
+/**/state-backend/
+*.checkpoint
+*.metadata
+
