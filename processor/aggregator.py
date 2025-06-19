@@ -1,58 +1,30 @@
 from confluent_kafka.admin import AdminClient
-from confluent_kafka.cimpl import NewTopic
 from pyflink.common import Duration, Types, WatermarkStrategy
 from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.datastream.window import TumblingEventTimeWindows
-from pyflink.datastream.connectors.kafka import FlinkKafkaConsumer, FlinkKafkaProducer
-from pyflink.common.serialization import SimpleStringSchema
 from pyflink.common.time import Time
-from .config import KAFKA_BOOTSTRAP, MAX_OUT_OF_ORDER_MS
-from .deserializer import json_to_trade
+
+from .sinks.kafka_sink import create_kafka_candle_sink
+from .topics import create_interval_topics, discover_topics
+from .transforms.deserializer import json_to_trade
 from .timestampers import TradeTimestampAssigner
-from .window_functions import OHLCVWindowFunction, OHLCVAggregateFunction
+from .transforms.window_functions import OHLCVWindowFunction, OHLCVAggregateFunction
 from .schema import CANDLE_TYPE, row_to_candle
-import time
-import multiprocessing
+from .config import KAFKA_BOOTSTRAP, MAX_OUT_OF_ORDER_MS, WINDOW_CONFIGS, DESIRED_PARTITIONS
+from .sources import create_trade_consumer
 
-DESIRED_PARTITIONS = 1
-
-WINDOW_CONFIGS = [
-    ("1s", 1_000),
-    ("1m", 60_000),
-    ("1h", 3_600_000),
-]
 
 def build(env: StreamExecutionEnvironment):
     admin = AdminClient({"bootstrap.servers": KAFKA_BOOTSTRAP})
-    topics_list = None
-    while not topics_list:
-        print("grabbing topics list...")
-        topics_list  = admin.list_topics(timeout=5).topics
-        if not topics_list:
-            time.sleep(.2)
+    topics_dict = discover_topics(admin)
 
-    trade_topics = [name for name in topics_list if name.startswith("trades.")]
-    print(trade_topics)
-
-    for interval, _ in WINDOW_CONFIGS:
-        topic = f"candles.{interval}"
-        if topic not in topics_list:
-            new_topic = NewTopic(topic, num_partitions=DESIRED_PARTITIONS, replication_factor=1)
-            admin.create_topics([new_topic]).get(topic).result()
+    create_interval_topics(admin, topics_dict)
 
     env.set_parallelism(DESIRED_PARTITIONS)
 
     print("Creating Flink Kafka consumer...")
-    consumer_props = {
-        "bootstrap.servers": KAFKA_BOOTSTRAP,
-        "group.id": "processor",
-        "auto.offset.reset": "earliest",
-    }
-    consumer = FlinkKafkaConsumer(
-        topics=trade_topics,
-        deserialization_schema=SimpleStringSchema(),  # raw JSON
-        properties=consumer_props,
-    )
+    trade_topics = [name for name in topics_dict if name.startswith("trades.")]
+    consumer = create_trade_consumer(trade_topics)
 
     base_ds = (
         env
@@ -67,19 +39,9 @@ def build(env: StreamExecutionEnvironment):
     )
 
     for interval, window_ms in WINDOW_CONFIGS:
-        topic = f"candles.{interval}"
-        print(f"Setting up {interval} -> {topic}")
-        if topic not in admin.list_topics(timeout=5).topics:
-            admin.create_topics([NewTopic(topic, DESIRED_PARTITIONS, 1)]).get(topic).result()
+        producer = create_kafka_candle_sink(interval)
 
-        print(f"Creating Flink Kafka producer for {topic}")
-        producer = FlinkKafkaProducer(
-            topic=topic,
-            serialization_schema=SimpleStringSchema(),
-            producer_config={"bootstrap.servers": KAFKA_BOOTSTRAP},
-        )
-
-        print(f"Creating Flink DataStream for {topic}")
+        print(f"Setting up Flink DataStream for candles.{interval}")
         (
             base_ds
             .window(TumblingEventTimeWindows.of(Time(window_ms)))

@@ -1,6 +1,5 @@
 import json
-from typing import Any
-from .models import Trade
+from ..models import Trade
 
 def json_to_trade(value: str) -> Trade:
     data = json.loads(value)

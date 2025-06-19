@@ -1,5 +1,5 @@
 import pytest
-from processor.deserializer import json_to_trade
+from processor.transforms.deserializer import json_to_trade
 from processor.models import Trade
 
 def test_json_to_trade_maps_binance_fields():

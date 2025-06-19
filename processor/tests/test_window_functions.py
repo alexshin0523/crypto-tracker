@@ -1,5 +1,5 @@
 import pytest
-from processor.window_functions import OHLCVWindowFunction
+from processor.transforms.window_functions import OHLCVWindowFunction
 from processor.models import Trade
 
 # Minimal stubs to mimic Flink's context.window()

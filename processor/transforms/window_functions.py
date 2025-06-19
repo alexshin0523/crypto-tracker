@@ -3,8 +3,8 @@ from pyflink.datastream.functions import AggregateFunction
 from pyflink.common import Row
 from typing import Iterable
 
-from .models import Trade, CandleAccumulator, Candle
-from .schema import candle_to_row, row_to_candle
+from processor.models import Trade, CandleAccumulator, Candle
+from processor.schema import candle_to_row, row_to_candle
 
 class OHLCVAggregateFunction(AggregateFunction):
 
