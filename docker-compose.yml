@@ -44,12 +44,16 @@ services:
       dockerfile: Dockerfile.flink-state
     image: my-flink-state
     command: jobmanager
+    hostname: jobmanager
+    container_name: jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
     ports:
-      - "8081:8081"   # Flink UI
+      - "8081:8081"
+      - "6123:6123"
     volumes:
-      - ./state-backend:/state-backend
+      - ./processor/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink_state:/state-backend
 
   taskmanager:
     build:
@@ -59,12 +63,10 @@ services:
     command: taskmanager
     environment:
       JOB_MANAGER_RPC_ADDRESS: jobmanager
-#      FLINK_PROPERTIES: |
-#        taskmanager.numberOfTaskSlots: 2
-
     depends_on: [jobmanager]
     volumes:
-      - ./state-backend:/state-backend
+      - ./processor/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink_state:/state-backend
 
   processor:
     build:
@@ -74,16 +76,16 @@ services:
       KAFKA_BOOTSTRAP: "kafka:9092"
       CONNECTOR_JAR: "/app/jars/flink-sql-connector-kafka-3.0.2-1.18.jar"
       STATE_DIR: "file:///state-backend"
-      PARTITIONS: 4
+      PARTITIONS: 1
       JOB_MANAGER_RPC_ADDRESS: jobmanager
     volumes:
-      - ./state-backend:/state-backend
+      - ./flink_state:/state-backend
     depends_on:
       - kafka
       - jobmanager
       - taskmanager
 
 volumes:
-  state_backend: {}
+  flink_state: {}
   processor_state:
 

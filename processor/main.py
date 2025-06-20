@@ -2,7 +2,7 @@ from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.datastream.state_backend import EmbeddedRocksDBStateBackend
 from pyflink.common import Configuration
 from processor import aggregator, config
-from processor.config import STATE_DIR
+from processor.config import STATE_DIR, DESIRED_PARTITIONS
 import os
 
 def create_env(connector_jar: str = None) -> StreamExecutionEnvironment:
@@ -14,15 +14,16 @@ def create_env(connector_jar: str = None) -> StreamExecutionEnvironment:
     return env
 
 def configure_env(env: StreamExecutionEnvironment) -> None:
-    cfg = Configuration()
-    cfg.set_string("state.backend", "rocksdb")
-    cfg.set_string("state.checkpoint-storage", "filesystem")
-    cfg.set_string("state.checkpoints.dir", STATE_DIR)
-    env.configure(cfg)
-    env.enable_checkpointing(30_000)
+    # cfg = Configuration()
+    # cfg.set_string("state.backend", "rocksdb")
+    # cfg.set_string("state.checkpoint-storage", "filesystem")
+    # cfg.set_string("state.checkpoints.dir", STATE_DIR)
+    # env.configure(cfg)
+    # env.enable_checkpointing(30_000)
     env.set_python_requirements(
         requirements_file_path="/app/processor/requirements.txt"
     )
+    # env.set_parallelism(DESIRED_PARTITIONS)
 
 def build_pipeline(env: StreamExecutionEnvironment) -> None:
     aggregator.build(env)

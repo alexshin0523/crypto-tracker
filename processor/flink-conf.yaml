@@ -1,0 +1,23 @@
+
+jobmanager.rpc.address: jobmanager
+jobmanager.rpc.port: 6123
+jobmanager.rpc.bind-address: 0.0.0.0
+jobmanager.memory.process.size: 1g
+
+rest.address: 0.0.0.0
+rest.port: 8081
+rest.bind-address: 0.0.0.0
+
+taskmanager.memory.process.size: 1g
+taskmanager.numberOfTaskSlots: 1
+
+parallelism.default: 1
+
+state.backend: rocksdb
+state.checkpoints.dir: file:///state-backend
+execution.checkpointing.interval: 30s
+execution.checkpointing.mode: EXACTLY_ONCE
+
+
+blob.server.port: 6124
+query.server.port: 6125

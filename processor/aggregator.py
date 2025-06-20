@@ -10,7 +10,7 @@ from .transforms.deserializer import json_to_trade
 from .timestampers import TradeTimestampAssigner
 from .transforms.window_functions import OHLCVWindowFunction, OHLCVAggregateFunction
 from .schema import CANDLE_TYPE, row_to_candle
-from .config import KAFKA_BOOTSTRAP, MAX_OUT_OF_ORDER_MS, WINDOW_CONFIGS, DESIRED_PARTITIONS
+from .config import KAFKA_BOOTSTRAP, MAX_OUT_OF_ORDER_MS, WINDOW_CONFIGS
 from .sources import create_trade_consumer
 
 
@@ -19,8 +19,6 @@ def build(env: StreamExecutionEnvironment):
     topics_dict = discover_topics(admin)
 
     create_interval_topics(admin, topics_dict)
-
-    env.set_parallelism(DESIRED_PARTITIONS)
 
     print("Creating Flink Kafka consumer...")
     trade_topics = [name for name in topics_dict if name.startswith("trades.")]

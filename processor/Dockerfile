@@ -30,12 +30,9 @@ RUN mkdir -p /state-backend
 VOLUME ["/state-backend"]
 
 USER flink
-RUN echo "taskmanager.numberOfTaskSlots: 2" >> /opt/flink/conf/flink-conf.yaml
-
 ENTRYPOINT ["bash","-c","\
   /opt/flink/bin/flink run \
     --jobmanager jobmanager:8081 \
-    --parallelism 1 \
     --pyModule processor.main \
     --pyFiles /app/processor.zip \
     --pyRequirements /app/processor/requirements.txt \

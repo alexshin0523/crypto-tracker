@@ -13,7 +13,7 @@ WINDOW_SECONDS: int = int(os.getenv("WINDOW_SECONDS", "60"))
 # ---- State backend path (must match docker-compose volume) ----
 STATE_DIR: str = os.getenv("STATE_DIR", "file:///state-backend")
 
-DESIRED_PARTITIONS = int(os.getenv("PARTITIONS", "4"))
+DESIRED_PARTITIONS = int(os.getenv("PARTITIONS", "1"))
 
 WINDOW_CONFIGS = [
     ("1s", 1_000),
