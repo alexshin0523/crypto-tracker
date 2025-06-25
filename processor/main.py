@@ -5,12 +5,8 @@ from processor import aggregator, config
 from processor.config import STATE_DIR, DESIRED_PARTITIONS
 import os
 
-def create_env(connector_jar: str = None) -> StreamExecutionEnvironment:
-
-
+def create_env() -> StreamExecutionEnvironment:
     env = StreamExecutionEnvironment.get_execution_environment()
-    if connector_jar:
-        env.add_jars(f"file://{connector_jar}")
     return env
 
 def configure_env(env: StreamExecutionEnvironment) -> None:
@@ -33,8 +29,7 @@ def submit(env: StreamExecutionEnvironment, job_name: str = "crypto-ticker-proce
     env.execute(job_name)
 
 def main():
-    jar = os.getenv("CONNECTOR_JAR")
-    env = create_env(jar)
+    env = create_env()
     configure_env(env)
     build_pipeline(env)
     submit(env)

@@ -12,6 +12,7 @@ from .transforms.window_functions import OHLCVWindowFunction, OHLCVAggregateFunc
 from .schema import CANDLE_TYPE, row_to_candle
 from .config import KAFKA_BOOTSTRAP, MAX_OUT_OF_ORDER_MS, WINDOW_CONFIGS
 from .sources import create_trade_consumer
+from .sinks.redis_sink import RedisConfig, RedisSinkFactory
 
 
 def build(env: StreamExecutionEnvironment):
@@ -36,11 +37,15 @@ def build(env: StreamExecutionEnvironment):
         .key_by(lambda t: t.symbol)
     )
 
+    redis_cfg = RedisConfig()
+    redis_sink = RedisSinkFactory(redis_cfg).create_redis_sink()
+
     for interval, window_ms in WINDOW_CONFIGS:
         producer = create_kafka_candle_sink(interval)
 
+
         print(f"Setting up Flink DataStream for candles.{interval}")
-        (
+        window_ds = (
             base_ds
             .window(TumblingEventTimeWindows.of(Time(window_ms)))
             .aggregate(
@@ -50,7 +55,10 @@ def build(env: StreamExecutionEnvironment):
             )
             .map(row_to_candle, output_type=Types.STRING())
             .add_sink(producer)
+            .add_sink(redis_sink)
         )
+        window_ds.add_sink(producer)
+        window_ds.add_sink(redis_sink)
 
 
 
