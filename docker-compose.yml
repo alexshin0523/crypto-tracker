@@ -74,6 +74,7 @@ services:
       dockerfile: processor/Dockerfile
     environment:
       KAFKA_BOOTSTRAP: "kafka:9092"
+      CONNECTOR_JAR: "/app/jars/flink-sql-connector-kafka-3.0.2-1.18.jar"
       STATE_DIR: "file:///state-backend"
       PARTITIONS: 1
       JOB_MANAGER_RPC_ADDRESS: jobmanager

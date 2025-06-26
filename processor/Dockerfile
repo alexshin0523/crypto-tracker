@@ -1,13 +1,3 @@
-FROM maven:3.8.3-openjdk-17-slim AS builder
-
-WORKDIR /build
-COPY processor/redis-kafka-connectors/pom.xml ./
-
-RUN mvn dependency:go-offline -q -e
-
-RUN mvn package -DskipTests -q
-
-
 FROM flink:1.18-scala_2.12
 
 USER root
@@ -27,7 +17,13 @@ COPY processor /app/processor
 
 RUN cd /app && zip -r processor.zip processor
 
-COPY --from=builder /build/target/flink-connectors-1.0.0-fat.jar /app/jars/connectors-fat.jar
+ARG KAFKA_SQL_CONN_VER=3.0.2-1.18
+RUN mkdir -p /app/jars \
+ && curl -fsSL \
+      https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/${KAFKA_SQL_CONN_VER}/flink-sql-connector-kafka-${KAFKA_SQL_CONN_VER}.jar \
+      -o /app/jars/flink-sql-connector-kafka-${KAFKA_SQL_CONN_VER}.jar
+
+ENV CONNECTOR_JAR=/app/jars/flink-sql-connector-kafka-${KAFKA_SQL_CONN_VER}.jar
 
 # create state dir for RocksDB backend
 RUN mkdir -p /state-backend
@@ -41,6 +37,5 @@ ENTRYPOINT ["bash","-c","\
     --pyFiles /app/processor.zip \
     --pyRequirements /app/processor/requirements.txt \
     --pyClientExecutable /usr/bin/python3 \
-    --jarfile /app/jars/connectors-fat.jar \
     --detached \
 "]

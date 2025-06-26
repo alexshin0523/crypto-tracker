@@ -14,20 +14,12 @@ WINDOW_SECONDS: int = int(os.getenv("WINDOW_SECONDS", "60"))
 STATE_DIR: str = os.getenv("STATE_DIR", "file:///state-backend")
 
 DESIRED_PARTITIONS = int(os.getenv("PARTITIONS", "1"))
-DESIRED_PARTITIONS = multiprocessing.cpu_count()
 
 WINDOW_CONFIGS = [
     ("1s", 1_000),
     ("1m", 60_000),
     ("1h", 3_600_000),
 ]
-
-REDIS_NODES: list[tuple[str,int]] = [
-    (os.getenv("REDIS_HOST", "redis-master"), int(os.getenv("REDIS_PORT", "6379")))
-]
-REDIS_PASSWORD: str      = os.getenv("REDIS_PASSWORD", "")
-REDIS_USE_TLS: bool      = os.getenv("REDIS_USE_TLS", "false").lower() == "true"
-REDIS_RETENTION: int     = int(os.getenv("REDIS_RETENTION", "150"))
 
 # Convenience helper for converting Durations if you need it later
 def seconds(n: int) -> int:

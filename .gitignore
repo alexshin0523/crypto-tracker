@@ -179,10 +179,3 @@ cython_debug/
 *.checkpoint
 *.metadata
 
-# Maven build output
-processor/redis-kafka-connectors/target/
-# The shaded JAR
-processor/redis-kafka-connectors/target/*.jar
-# Local ZIP of the Python module (only needed inside Docker)
-processor/processor.zip
-
