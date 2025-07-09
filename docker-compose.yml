@@ -84,6 +84,34 @@ services:
       - kafka
       - jobmanager
       - taskmanager
+  redis:
+    image: redislabs/redistimeseries:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+  redis-writer:
+    build:
+      context: ./redis-writer
+    container_name: redis-writer
+    depends_on:
+      - processor
+      - kafka
+      - redis
+    environment:
+      KAFKA_BOOTSTRAP: "kafka:9092"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      GROUP_ID: "redis-writer"
+  api:
+    build: ./api
+    container_name: api
+    environment:
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
 
 volumes:
   flink_state: {}

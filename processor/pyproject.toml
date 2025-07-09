@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "crypto-tracker-processor"
+name = "processor"
 version = "0.1.0"
 description = "Crypto Tracker"
 authors = ["Alex Shin <alexwoonggishin@gmail.com>"]

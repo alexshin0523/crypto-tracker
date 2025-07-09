@@ -28,7 +28,7 @@ def configure_env(env: StreamExecutionEnvironment) -> None:
 def build_pipeline(env: StreamExecutionEnvironment) -> None:
     aggregator.build(env)
 
-def submit(env: StreamExecutionEnvironment, job_name: str = "crypto-ticker-processor"):
+def submit(env: StreamExecutionEnvironment, job_name: str = "processor"):
     # you can switch --detached off to block here and see logs
     env.execute(job_name)
 
