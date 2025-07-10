@@ -1,13 +1,28 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from typing import List, Dict, Any
 from redis import Redis
 from redistimeseries.client import Client as RedisTimeSeries
+from fastapi.middleware.cors import CORSMiddleware
 import os
+import json
+import asyncio
+
+from confluent_kafka import Consumer
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or ["http://localhost:3000"] for dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
+CANDLE_TOPICS = ["candles.1s", "candles.1m", "candles.1h"]  # adjust to your topic names
 
 r = Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 ts = RedisTimeSeries(conn=r)
@@ -50,3 +65,34 @@ def get_multi_candles(
                 merged_candles.append(candle)
             result[symbol][interval] = merged_candles
     return result
+
+@app.websocket("/ws/candles")
+async def candles_ws(websocket: WebSocket):
+    await websocket.accept()
+    print("connection open")
+    consumer = Consumer({
+        'bootstrap.servers': KAFKA_BOOTSTRAP,
+        'group.id': "api-ws-candle-group",
+        'auto.offset.reset': 'latest'
+    })
+    consumer.subscribe(CANDLE_TOPICS)
+    try:
+        while True:
+            try:
+                msg = consumer.poll(0.5)
+                if msg and not msg.error():
+                    try:
+                        candle = json.loads(msg.value().decode("utf-8"))
+                        await websocket.send_json(candle)
+                    except RuntimeError as e:
+                        print("WebSocket is closed, exiting loop:", e)
+                        break  # Stop loop immediately if socket closed
+                    except Exception as e:
+                        print("Bad message or decode error:", e)
+                await asyncio.sleep(0.1)
+            except WebSocketDisconnect:
+                print("WebSocket disconnected")
+                break
+    finally:
+        consumer.close()
+        print("connection closed")

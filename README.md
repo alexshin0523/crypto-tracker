@@ -2,10 +2,8 @@
 Crypto-Tracker is an open-source, real-time streaming analytics platform for cryptocurrency markets. 
 It ingests live trade data from exchange WebSockets into Kafka, processes it with PyFlink to generate 
 OHLCV candles and advanced technical indicators (RSI, MACD, Bollinger Bands, etc.), and exposes a 
-REST / WebSocket API. A FASTapi frontend lets users track any coins, build custom watchlists, 
-and explore interactive candlestick charts and metrics. Designed in Python for modularity and 
-horizontal scalability, Crypto-Tracker aims to evolve into a full-featured web app for on-the-fly 
-crypto insights.
+REST / WebSocket API. A React-based frontend lets users track any coins, build custom watchlists, 
+and explore interactive candlestick charts and metrics. Designed in Python for modularity and horizontal scalability, Crypto-Tracker aims to evolve into a full-featured web app for on-the-fly crypto insights.
 
 
 # Testing Kafka Topics
@@ -18,12 +16,10 @@ THEN if you want to spin up temporary consumer to read messages from a topic, ru
 
 ```docker run --network=host edenhill/kcat:1.7.1 -C -b localhost:19092 -t {topic_name} -o beginning -e```
 
-# Running Processor unit tests
+# Flink
 
-```cd processor```
+Dash Board Url: ```http://localhost:8081/```
 
-```poetry install```
+# Frontend
 
-```export PYTHONPATH=..```
-
-```peotry run pytest```
+Local Dev Url: ```http://localhost:3000/```

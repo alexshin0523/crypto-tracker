@@ -13,7 +13,7 @@ def write_candle_to_redis(ts, candle):
     key_prefix = f"ohlcv:{symbol}:{interval}"
     retention = get_retention_ms(interval)
 
-    for field in ['open', 'high', 'low', 'close', 'volume']:
+    for field in ['open', 'high', 'low', 'close', 'volume', 'symbol', 'interval']:
         ts_key = f"{key_prefix}:{field}"
         ts.add(ts_key, timestamp, candle[field], retention_msecs=retention)
 

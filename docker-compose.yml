@@ -112,6 +112,16 @@ services:
       - redis
     ports:
       - "8000:8000"
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
 
 volumes:
   flink_state: {}
